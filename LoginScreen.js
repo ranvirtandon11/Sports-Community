@@ -7,7 +7,7 @@ const LoginScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
 
   
-  const handleLogin = () => {
+  const handleLogin = async() => {
   // Implement your authentication logic here
   const auth = getAuth();
   
@@ -16,7 +16,7 @@ const LoginScreen = ({ navigation }) => {
       // Signed in successfully
       const user = userCredential.user;
       console.log('User:', user);
-      navigation.navigate('VenuesScreen');
+      navigation.navigate('SportsScreen');
     })
     .catch((error) => {
       // Handle errors here

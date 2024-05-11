@@ -9,7 +9,7 @@ const SplashScreen = ({ navigation }) => {
     // Fade-in animation
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 1000,
+      duration: 2000,
       easing: Easing.linear,
       useNativeDriver: true,
     }).start();
@@ -41,7 +41,7 @@ const SplashScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Animated.Image
-        source={require('./logo.jpg')} // Replace with your logo
+        source={require('./logo.png')} // Replace with your logo
         style={[styles.logo, { opacity: fadeAnim, transform: [{ rotate: spin }] }]}
       />
       <Text style={styles.title}>Sports App</Text>
