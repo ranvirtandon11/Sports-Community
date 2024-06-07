@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { useForm, Controller } from "react-hook-form"
-import {auth, db} from './Config';
+import {auth, db} from '../Config';
 import { createUserWithEmailAndPassword, sendEmailVerification, getAuth } from 'firebase/auth';
 import { FontAwesome } from '@expo/vector-icons'; // Assuming you're using Expo and FontAwesome icons
 
