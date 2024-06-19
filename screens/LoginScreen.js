@@ -8,7 +8,6 @@ const LoginScreen = ({ navigation }) => {
 
   
   const handleLogin = async() => {
-  // Implement your authentication logic here
   const auth = getAuth();
   
   signInWithEmailAndPassword(auth, email, password)
@@ -19,7 +18,6 @@ const LoginScreen = ({ navigation }) => {
       navigation.navigate('SportsScreen');
     })
     .catch((error) => {
-      // Handle errors here
       const errorCode = error.code;
       const errorMessage = error.message;
       console.error('Error:', errorCode, errorMessage);

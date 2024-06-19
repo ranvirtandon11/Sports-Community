@@ -1,225 +1,230 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { Calendar } from 'react-native-calendars';
+import { View, Text, StyleSheet, TextInput, Button, Alert, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../Config';
+import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { auth, db } from '../Config';
+import { Calendar } from 'react-native-calendars';
 
-const CreateEvent = ({ navigation }) => {
-  const [stadiumImage, setStadiumImage] = useState(null);
-  const [stadiumName, setStadiumName] = useState(''); // New state for stadium name
+const CreateEvent = ({ route, navigation }) => {
+  const { sport } = route.params;
+  const [stadiumName, setStadiumName] = useState('');
   const [stadiumInfo, setStadiumInfo] = useState('');
   const [matchStartTime, setMatchStartTime] = useState('');
   const [matchEndTime, setMatchEndTime] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
-  const [showCalendar, setShowCalendar] = useState(false);
+  const [directions, setDirections] = useState('');
+  const [stadiumImage, setStadiumImage] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
 
-  const handleShow = async () => {
-    navigation.navigate('FootballPitches')
-  }
+  const handleImagePick = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
 
-  const handleSubmit = async () => {
-    if (!stadiumImage || !stadiumName || !stadiumInfo || !matchStartTime || !matchEndTime || !selectedDate) {
-      alert('Please fill out all fields and upload an image.');
+    if (!result.canceled) {
+      setStadiumImage(result.assets[0].uri);
+    }
+  };
+
+  const handleCreateEvent = async () => {
+    if (!stadiumName || !stadiumInfo || !matchStartTime || !matchEndTime || !selectedDate || !stadiumImage || !directions) {
+      Alert.alert('Error', 'Please fill all the fields, select a date, and choose an image.');
       return;
     }
 
     setUploading(true);
-
     try {
       const storage = getStorage();
-      const imageRef = ref(storage, `images/${new Date().toISOString()}_${stadiumImage.split('/').pop()}`);
-      const img = await fetch(stadiumImage);
-      const bytes = await img.blob();
-
-      await uploadBytes(imageRef, bytes);
+      const response = await fetch(stadiumImage);
+      const blob = await response.blob();
+      const imageRef = ref(storage, `images/${Date.now()}_${stadiumName}`);
+      await uploadBytes(imageRef, blob);
       const imageUrl = await getDownloadURL(imageRef);
 
-      const docRef = await addDoc(collection(db, 'events'), {
-        stadiumImage: imageUrl,
-        stadiumName, // Include stadium name in the document
+      await addDoc(collection(db, 'events'), {
+        sport,
+        stadiumName,
         stadiumInfo,
         matchStartTime,
         matchEndTime,
-        selectedDate,
+        matchDate: selectedDate,
+        stadiumImage: imageUrl,
+        directions,
       });
 
-      console.log('Event added with ID: ', docRef.id);
-      setStadiumImage(null);
-      setStadiumName(''); // Reset stadium name state
-      setStadiumInfo('');
-      setMatchStartTime('');
-      setMatchEndTime('');
-      setSelectedDate('');
-     
+      Alert.alert('Success', 'Event created successfully.');
+      navigation.goBack();
     } catch (error) {
-      console.error('Error adding event: ', error);
-    }
-
-    setUploading(false);
-  };
-
-  const handleImageUpload = async () => {
-    try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        alert('Sorry, we need camera roll permissions to make this work!');
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-
-      if (!result.canceled) {
-        setStadiumImage(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.log('Error selecting image:', error);
+      console.error('Error creating event: ', error);
+      Alert.alert('Error', 'There was an error creating the event. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
-  const handleDateSelect = day => {
+  const handleDateSelect = (day) => {
     setSelectedDate(day.dateString);
     setShowCalendar(false);
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Stadium Image</Text>
-      <TouchableOpacity style={styles.imageUploadContainer} onPress={handleImageUpload}>
-        {stadiumImage ? (
-          <Image source={{ uri: stadiumImage }} style={styles.stadiumImage} />
-        ) : (
-          <Text style={styles.uploadText}>Tap to upload image</Text>
-        )}
-      </TouchableOpacity>
-      <Text style={styles.label}>Stadium Name</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter stadium name"
-        value={stadiumName}
-        onChangeText={text => setStadiumName(text)}
-      />
-      <Text style={styles.label}>Stadium Information</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter stadium information"
-        value={stadiumInfo}
-        onChangeText={text => setStadiumInfo(text)}
-      />
-      <Text style={styles.label}>Match Start Time</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter match start time"
-        value={matchStartTime}
-        onChangeText={text => setMatchStartTime(text)}
-      />
-      <Text style={styles.label}>Match End Time</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter match end time"
-        value={matchEndTime}
-        onChangeText={text => setMatchEndTime(text)}
-      />
-      <Text style={styles.label}>Select Date</Text>
-      <TouchableOpacity style={styles.calendarInput} onPress={() => setShowCalendar(true)}>
-        <Text style={styles.calendarText}>
-          {selectedDate ? selectedDate : 'Tap to select date'}
-        </Text>
-      </TouchableOpacity>
-      {showCalendar && (
-        <Calendar
-          onDayPress={handleDateSelect}
-          markedDates={{ [selectedDate]: { selected: true } }}
-          style={styles.calendar}
-        />
-      )}
-      <TouchableOpacity style={styles.createEventButton} onPress={handleSubmit} disabled={uploading}>
-        {uploading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Create Event</Text>
-        )}
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.createEventButton} onPress={handleShow}>
-        <Text style={styles.buttonText}>Show</Text>
-      </TouchableOpacity>
+    <View style={styles.mainContainer}>
+      <View style={styles.topBar}>
+        <Text style={styles.topBarTitle}>Create Event for {sport}</Text>
+      </View>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.container}>
+          <TextInput
+            style={styles.input}
+            placeholder="Stadium Name"
+            value={stadiumName}
+            onChangeText={setStadiumName}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Stadium Info"
+            value={stadiumInfo}
+            onChangeText={setStadiumInfo}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Match Start Time"
+            value={matchStartTime}
+            onChangeText={setMatchStartTime}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Match End Time"
+            value={matchEndTime}
+            onChangeText={setMatchEndTime}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Add Directions"
+            value={directions}
+            onChangeText={setDirections}
+          />
+          <TouchableOpacity style={styles.imagePicker} onPress={handleImagePick}>
+            <Text style={styles.imagePickerText}>Pick an Image</Text>
+          </TouchableOpacity>
+          {stadiumImage && <Image source={{ uri: stadiumImage }} style={styles.imagePreview} />}
+          <TouchableOpacity style={styles.datePickerButton} onPress={() => setShowCalendar(!showCalendar)}>
+            <Text style={styles.datePickerButtonText}>Select Date</Text>
+          </TouchableOpacity>
+          {selectedDate ? <Text style={styles.selectedDateText}>Selected Date: {selectedDate}</Text> : null}
+          {showCalendar && (
+            <Calendar
+              onDayPress={handleDateSelect}
+              markedDates={{
+                [selectedDate]: { selected: true, selectedColor: '#FE724C' },
+              }}
+              style={styles.calendar}
+            />
+          )}
+          {uploading ? (
+            <TouchableOpacity style={[styles.createButton, styles.disabledButton]} disabled>
+              <Text style={styles.createButtonText}>Uploading...</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.createButton} onPress={handleCreateEvent}>
+              <Text style={styles.createButtonText}>Create Event</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  mainContainer: {
     flex: 1,
+  },
+  topBar: {
+    backgroundColor: '#007BFF',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginTop: 50,
+  },
+  topBarTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  scrollContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 25,
   },
-  label: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  imageUploadContainer: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  stadiumImage: {
-    width: 200,
-    height: 200,
-    resizeMode: 'cover',
-  },
-  uploadText: {
-    color: 'blue',
-    fontSize: 16,
+  container: {
+    flex: 1,
+    width: '100%',
   },
   input: {
-    width: '100%',
+    height: 40,
+    borderColor: 'gray',
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
     marginBottom: 20,
+    paddingHorizontal: 10,
+    borderRadius: 10,
   },
-  calendarInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+  imagePicker: {
+    backgroundColor: '#007BFF',
     padding: 10,
-    marginBottom: 20,
-    width: '100%',
     alignItems: 'center',
+    marginBottom: 20,
+    borderRadius: 10,
   },
-  calendarText: {
+  imagePickerText: {
+    color: '#fff',
     fontSize: 16,
+  },
+  imagePreview: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'cover',
+    marginBottom: 20,
+    borderRadius: 10,
+  },
+  datePickerButton: {
+    backgroundColor: '#007BFF',
+    padding: 10,
+    alignItems: 'center',
+    marginBottom: 20,
+    borderRadius: 10,
+  },
+  datePickerButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  selectedDateText: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
   },
   calendar: {
     marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    width: '100%',
   },
-  createEventButton: {
-    backgroundColor: '#007bff',
+  createButton: {
+    backgroundColor: '#FE724C',
+    padding: 15,
+    alignItems: 'center',
     borderRadius: 10,
-    padding: 10,
-    width: '100%',
-    marginBottom: 10, // Add marginBottom to separate the buttons
   },
-  buttonText: {
+  createButtonText: {
     color: '#fff',
-    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  disabledButton: {
+    backgroundColor: 'gray',
   },
 });
 

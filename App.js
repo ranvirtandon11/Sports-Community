@@ -6,7 +6,7 @@ import RegisterScreen from './screens/RegisterScreen';
 import SplashScreen from './screens/SplashScreen'
 import SportsScreen from './screens/SportsScreen';
 import CreateEvent from './screens/CreateEvent';
-import FootballPitches from './screens/FootballPitches'
+import Pitches from './screens/Pitches'
 import StadiumDetail from './screens/StadiumDetail'
 
 const Stack = createNativeStackNavigator();
@@ -20,7 +20,7 @@ const App = () => {
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="SportsScreen" component={SportsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="CreateEvent" component={CreateEvent} options={{ headerShown: false }} />
-      <Stack.Screen name="FootballPitches" component={FootballPitches} options={{ headerShown: false }} />
+      <Stack.Screen name="Pitches" component={Pitches} options={{ headerShown: false }} />
       <Stack.Screen name="StadiumDetail" component={StadiumDetail} options={{ headerShown: false }}/>
     </Stack.Navigator>
   </NavigationContainer>

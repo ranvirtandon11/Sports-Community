@@ -19,6 +19,7 @@
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/native-stack": "^6.9.26",
     "expo": "^51.0.2",
+    "expo-file-system": "~17.0.1",
     "expo-image-picker": "^15.0.4",
     "expo-status-bar": "~1.11.1",
     "firebase": "^10.11.0",
@@ -28,11 +29,11 @@
     "react-native-alert-notification": "^0.4.0",
     "react-native-calendars": "^1.1304.1",
     "react-native-image-crop-picker": "^0.41.1",
-    "react-native-image-picker": "^7.1.2",
-    "expo-file-system": "~17.0.1"
+    "react-native-image-picker": "^7.1.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "@types/react-native-vector-icons": "^6.4.18"
   },
   "private": true
 }

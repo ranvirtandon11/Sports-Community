@@ -1,16 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-
-const ProfileImage = require("../assets/avatar.jpg");
-const FootballImage = require("../assets/football.png");
-const BasketballImage = require("../assets/basketball.png");
-// const TennisImage = require("./assets/tennis.png");
-// const VolleyballImage = require("./assets/volleyball.png");
-// const BadmintonImage = require("./assets/badminton.png");
-// Import images for other sports similarly
-
-const { width, height } = Dimensions.get('window');
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import ProfileImage from '../assets/avatar.jpg';
+import FootballImage from '../assets/football.png';
+import BasketballImage from '../assets/basketball.png';
+// import other sports images similarly
 
 const HomePage = ({ navigation }) => {
   const [hovered, setHovered] = useState(null);
@@ -19,8 +12,8 @@ const HomePage = ({ navigation }) => {
     navigation.navigate('Profile'); // Navigate to the profile page
   };
 
-  const goToCreateEvent = () => {
-    navigation.navigate('CreateEvent'); // Navigate to the create event page
+  const goToPitches = (sport) => {
+    navigation.navigate('Pitches', { sport }); // Navigate to the Pitches page
   };
 
   return (
@@ -36,6 +29,7 @@ const HomePage = ({ navigation }) => {
           style={[styles.iconItem, hovered === 'Football' && styles.iconItemHovered]}
           onPressIn={() => setHovered('Football')}
           onPressOut={() => setHovered(null)}
+          onPress={() => goToPitches('Football')}
         >
           <Image source={FootballImage} style={styles.sportIcon} />
           <Text style={styles.iconLabel}>Football</Text>
@@ -44,16 +38,13 @@ const HomePage = ({ navigation }) => {
           style={[styles.iconItem, hovered === 'Basketball' && styles.iconItemHovered]}
           onPressIn={() => setHovered('Basketball')}
           onPressOut={() => setHovered(null)}
+          onPress={() => goToPitches('Basketball')}
         >
           <Image source={BasketballImage} style={styles.sportIcon} />
           <Text style={styles.iconLabel}>Basketball</Text>
         </TouchableOpacity>
         {/* Add TouchableOpacity components for other sports similarly */}
       </View>
-      {/* Add the "Create Event" button */}
-      <TouchableOpacity style={styles.createEventButton} onPress={goToCreateEvent}>
-        <Text style={styles.createEventButtonText}>Create Event</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -97,11 +88,11 @@ const styles = StyleSheet.create({
   iconItem: {
     alignItems: 'center',
     marginBottom: 20,
-    width: '30%', // Adjust based on the number of icons you want to display per row
+    width: '30%',
   },
   iconItemHovered: {
     borderRadius: 50,
-    backgroundColor: 'rgba(254, 114, 76, 1)', // Change the color as per your requirement
+    backgroundColor: 'rgba(254, 114, 76, 1)',
     height: 110,
     width: 90,
   },
@@ -113,20 +104,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 10,
     textAlign: 'center',
-  },
-  createEventButton: {
-    backgroundColor: '#FE724C', // Change the background color as per your requirement
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    alignSelf: 'center',
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  createEventButtonText: {
-    color: '#ffffff', // Change the text color as per your requirement
-    fontSize: 18,
-    fontWeight: 'bold',
   },
 });
 

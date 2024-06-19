@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../Config';
 import footballImage from '../assets/football.png'; // Import the football image
+import basketballImage from '../assets/basketball.png'; // Import the basketball image
 
-const FootballPitches = ({ navigation }) => {
+const Pitches = ({ route, navigation }) => {
+  const { sport } = route.params;
   const [stadiums, setStadiums] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStadiums = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'events'));
+        const q = query(collection(db, 'events'), where('sport', '==', sport));
+        const querySnapshot = await getDocs(q);
         const stadiumData = querySnapshot.docs.map(doc => ({
           imageUrl: doc.data().stadiumImage,
           name: doc.data().stadiumName,
@@ -28,7 +31,11 @@ const FootballPitches = ({ navigation }) => {
     };
 
     fetchStadiums();
-  }, []);
+  }, [sport]);
+
+  const goToCreateEvent = () => {
+    navigation.navigate('CreateEvent', { sport });
+  };
 
   if (loading) {
     return (
@@ -40,9 +47,9 @@ const FootballPitches = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Football</Text>
+      <Text style={styles.header}>{sport}</Text>
       <Text style={styles.imageCount}>{stadiums.length}+ pitches</Text>
-      <Image source={footballImage} style={styles.footballImage} />
+      <Image source={sport === 'Football' ? footballImage : basketballImage} style={styles.sportImage} />
       <ScrollView contentContainerStyle={styles.imageScrollContainer}>
         {stadiums.map((stadium, index) => (
           <TouchableOpacity
@@ -55,6 +62,9 @@ const FootballPitches = ({ navigation }) => {
           </TouchableOpacity>
         ))}
       </ScrollView>
+      <TouchableOpacity style={styles.createEventButton} onPress={goToCreateEvent}>
+        <Text style={styles.createEventButtonText}>Create Event</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -99,10 +109,10 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#333',
-    alignSelf: 'flex-start', // Align text to the left
+    alignSelf: 'flex-start',
     marginBottom: 15,
   },
-  footballImage: {
+  sportImage: {
     position: 'absolute',
     top: 60,
     right: 20,
@@ -110,6 +120,20 @@ const styles = StyleSheet.create({
     height: 150,
     resizeMode: 'contain',
   },
+  createEventButton: {
+    backgroundColor: '#FE724C',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignSelf: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  createEventButtonText: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
 });
 
-export default FootballPitches;
+export default Pitches;
