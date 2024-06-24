@@ -3,7 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import ProfileImage from '../assets/avatar.jpg';
 import FootballImage from '../assets/football.png';
 import BasketballImage from '../assets/basketball.png';
-// import other sports images similarly
+import GolfImage from '../assets/golf.png';
+import TennisImage from '../assets/tennis.png';
+import PadelIconImage from '../assets/PadelIcon.jpg';
+import CricketImage from '../assets/cricket.png';
+import TeamImage from '../assets/team.png'; // Import the team image
 
 const HomePage = ({ navigation }) => {
   const [hovered, setHovered] = useState(null);
@@ -43,7 +47,51 @@ const HomePage = ({ navigation }) => {
           <Image source={BasketballImage} style={styles.sportIcon} />
           <Text style={styles.iconLabel}>Basketball</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.iconItem, hovered === 'Golf' && styles.iconItemHovered]}
+          onPressIn={() => setHovered('Golf')}
+          onPressOut={() => setHovered(null)}
+          onPress={() => goToPitches('Golf')}
+        >
+          <Image source={GolfImage} style={styles.sportIcon} />
+          <Text style={styles.iconLabel}>Golf</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.iconItem, hovered === 'Tennis' && styles.iconItemHovered]}
+          onPressIn={() => setHovered('Tennis')}
+          onPressOut={() => setHovered(null)}
+          onPress={() => goToPitches('Tennis')}
+        >
+          <Image source={TennisImage} style={styles.sportIcon} />
+          <Text style={styles.iconLabel}>Tennis</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.iconItem, hovered === 'PadelIcon' && styles.iconItemHovered]}
+          onPressIn={() => setHovered('PadelIcon')}
+          onPressOut={() => setHovered(null)}
+          onPress={() => goToPitches('PadelIcon')}
+        >
+          <Image source={PadelIconImage} style={styles.sportIcon} />
+          <Text style={styles.iconLabel}>Padel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.iconItem, hovered === 'Cricket' && styles.iconItemHovered]}
+          onPressIn={() => setHovered('Cricket')}
+          onPressOut={() => setHovered(null)}
+          onPress={() => goToPitches('Cricket')}
+        >
+          <Image source={CricketImage} style={styles.sportIcon} />
+          <Text style={styles.iconLabel}>Cricket</Text>
+        </TouchableOpacity>
+
         {/* Add TouchableOpacity components for other sports similarly */}
+      </View>
+      <View style={styles.bottomImageContainer}>
+        <Image source={TeamImage} style={styles.bottomImage} />
       </View>
     </View>
   );
@@ -104,6 +152,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 10,
     textAlign: 'center',
+  },
+  bottomImageContainer: {
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  bottomImage: {
+    width: 300, // Adjust the size as needed
+    height: 150, // Adjust the size as needed
+    resizeMode: 'contain',
   },
 });
 

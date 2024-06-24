@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../Config';
-import footballImage from '../assets/football.png'; // Import the football image
-import basketballImage from '../assets/basketball.png'; // Import the basketball image
+import footballImage from '../assets/football.png';
+import basketballImage from '../assets/basketball.png';
+import golfImage from '../assets/golf.png';
+import tennisImage from '../assets/tennis.png';
+import cricketImage from '../assets/cricket.png';
+import paddleImage from '../assets/PadelIcon.jpg';
 
 const Pitches = ({ route, navigation }) => {
   const { sport } = route.params;
@@ -16,11 +20,15 @@ const Pitches = ({ route, navigation }) => {
         const q = query(collection(db, 'events'), where('sport', '==', sport));
         const querySnapshot = await getDocs(q);
         const stadiumData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
           imageUrl: doc.data().stadiumImage,
           name: doc.data().stadiumName,
           info: doc.data().stadiumInfo,
           matchStartTime: doc.data().matchStartTime,
           matchEndTime: doc.data().matchEndTime,
+          directions: doc.data().directions,
+          numberOfPlayers: doc.data().numberOfPlayers,
+          totalPrice: doc.data().totalPrice,
         }));
         setStadiums(stadiumData);
         setLoading(false);
@@ -37,6 +45,25 @@ const Pitches = ({ route, navigation }) => {
     navigation.navigate('CreateEvent', { sport });
   };
 
+  const getSportImage = (sport) => {
+    switch (sport) {
+      case 'Football':
+        return footballImage;
+      case 'Basketball':
+        return basketballImage;
+      case 'Golf':
+        return golfImage;
+      case 'Tennis':
+        return tennisImage;
+      case 'Cricket':
+        return cricketImage;
+      case 'PadelIcon':
+        return paddleImage;
+      default:
+        return footballImage; // Default to football image if no match is found
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -49,7 +76,7 @@ const Pitches = ({ route, navigation }) => {
     <View style={styles.container}>
       <Text style={styles.header}>{sport}</Text>
       <Text style={styles.imageCount}>{stadiums.length}+ pitches</Text>
-      <Image source={sport === 'Football' ? footballImage : basketballImage} style={styles.sportImage} />
+      <Image source={getSportImage(sport)} style={styles.sportImage} />
       <ScrollView contentContainerStyle={styles.imageScrollContainer}>
         {stadiums.map((stadium, index) => (
           <TouchableOpacity

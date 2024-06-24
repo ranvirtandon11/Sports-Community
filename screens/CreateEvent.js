@@ -1,22 +1,27 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Button, Alert, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Alert, TouchableOpacity, Image, ScrollView, Platform } from 'react-native';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../Config';
 import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Calendar } from 'react-native-calendars';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const CreateEvent = ({ route, navigation }) => {
   const { sport } = route.params;
   const [stadiumName, setStadiumName] = useState('');
   const [stadiumInfo, setStadiumInfo] = useState('');
+  const [numberOfPlayers, setNumberOfPlayers] = useState('');
   const [matchStartTime, setMatchStartTime] = useState('');
   const [matchEndTime, setMatchEndTime] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [directions, setDirections] = useState('');
+  const [totalPrice, setTotalPrice] = useState(''); // New state variable for total price
   const [stadiumImage, setStadiumImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
   const handleImagePick = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -32,7 +37,7 @@ const CreateEvent = ({ route, navigation }) => {
   };
 
   const handleCreateEvent = async () => {
-    if (!stadiumName || !stadiumInfo || !matchStartTime || !matchEndTime || !selectedDate || !stadiumImage || !directions) {
+    if (!stadiumName || !stadiumInfo || !numberOfPlayers || !matchStartTime || !matchEndTime || !selectedDate || !stadiumImage || !directions || !totalPrice) {
       Alert.alert('Error', 'Please fill all the fields, select a date, and choose an image.');
       return;
     }
@@ -50,11 +55,13 @@ const CreateEvent = ({ route, navigation }) => {
         sport,
         stadiumName,
         stadiumInfo,
+        numberOfPlayers,
         matchStartTime,
         matchEndTime,
         matchDate: selectedDate,
         stadiumImage: imageUrl,
         directions,
+        totalPrice, // Include total price in the database entry
       });
 
       Alert.alert('Success', 'Event created successfully.');
@@ -72,6 +79,20 @@ const CreateEvent = ({ route, navigation }) => {
     setShowCalendar(false);
   };
 
+  const handleStartTimeChange = (event, selectedTime) => {
+    setShowStartTimePicker(false);
+    if (selectedTime) {
+      setMatchStartTime(selectedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    }
+  };
+
+  const handleEndTimeChange = (event, selectedTime) => {
+    setShowEndTimePicker(false);
+    if (selectedTime) {
+      setMatchEndTime(selectedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    }
+  };
+
   return (
     <View style={styles.mainContainer}>
       <View style={styles.topBar}>
@@ -79,53 +100,86 @@ const CreateEvent = ({ route, navigation }) => {
       </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
-          <TextInput
-            style={styles.input}
-            placeholder="Stadium Name"
-            value={stadiumName}
-            onChangeText={setStadiumName}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Stadium Info"
-            value={stadiumInfo}
-            onChangeText={setStadiumInfo}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Match Start Time"
-            value={matchStartTime}
-            onChangeText={setMatchStartTime}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Match End Time"
-            value={matchEndTime}
-            onChangeText={setMatchEndTime}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Add Directions"
-            value={directions}
-            onChangeText={setDirections}
-          />
-          <TouchableOpacity style={styles.imagePicker} onPress={handleImagePick}>
-            <Text style={styles.imagePickerText}>Pick an Image</Text>
-          </TouchableOpacity>
-          {stadiumImage && <Image source={{ uri: stadiumImage }} style={styles.imagePreview} />}
-          <TouchableOpacity style={styles.datePickerButton} onPress={() => setShowCalendar(!showCalendar)}>
-            <Text style={styles.datePickerButtonText}>Select Date</Text>
-          </TouchableOpacity>
-          {selectedDate ? <Text style={styles.selectedDateText}>Selected Date: {selectedDate}</Text> : null}
-          {showCalendar && (
-            <Calendar
-              onDayPress={handleDateSelect}
-              markedDates={{
-                [selectedDate]: { selected: true, selectedColor: '#FE724C' },
-              }}
-              style={styles.calendar}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Stadium Name"
+              placeholderTextColor="#8A8A8A"
+              value={stadiumName}
+              onChangeText={setStadiumName}
             />
-          )}
+            <TextInput
+              style={styles.input}
+              placeholder="Stadium Info"
+              placeholderTextColor="#8A8A8A"
+              value={stadiumInfo}
+              onChangeText={setStadiumInfo}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Number of Players"
+              placeholderTextColor="#8A8A8A"
+              value={numberOfPlayers}
+              onChangeText={setNumberOfPlayers}
+              keyboardType="numeric"
+            />
+            <TouchableOpacity style={styles.timePickerButton} onPress={() => setShowStartTimePicker(true)}>
+              <Text style={styles.timePickerButtonText}>{matchStartTime ? `Start Time: ${matchStartTime}` : 'Select Start Time'}</Text>
+            </TouchableOpacity>
+            {showStartTimePicker && (
+              <DateTimePicker
+                value={new Date()}
+                mode="time"
+                is24Hour={true}
+                display="default"
+                onChange={handleStartTimeChange}
+              />
+            )}
+            <TouchableOpacity style={styles.timePickerButton} onPress={() => setShowEndTimePicker(true)}>
+              <Text style={styles.timePickerButtonText}>{matchEndTime ? `End Time: ${matchEndTime}` : 'Select End Time'}</Text>
+            </TouchableOpacity>
+            {showEndTimePicker && (
+              <DateTimePicker
+                value={new Date()}
+                mode="time"
+                is24Hour={true}
+                display="default"
+                onChange={handleEndTimeChange}
+              />
+            )}
+            <TextInput
+              style={styles.input}
+              placeholder="Add Directions"
+              placeholderTextColor="#8A8A8A"
+              value={directions}
+              onChangeText={setDirections}
+            />
+            <TextInput
+              style={styles.input} // New TextInput for Total Price
+              placeholder="Total Price"
+              placeholderTextColor="#8A8A8A"
+              value={totalPrice}
+              onChangeText={setTotalPrice}
+              keyboardType="numeric"
+            />
+            <TouchableOpacity style={styles.imagePicker} onPress={handleImagePick}>
+              <Text style={styles.imagePickerText}>Pick an Image</Text>
+            </TouchableOpacity>
+            {stadiumImage && <Image source={{ uri: stadiumImage }} style={styles.imagePreview} />}
+            <TouchableOpacity style={styles.datePickerButton} onPress={() => setShowCalendar(!showCalendar)}>
+              <Text style={styles.datePickerButtonText}>Select Date</Text>
+            </TouchableOpacity>
+            {selectedDate ? <Text style={styles.selectedDateText}>Selected Date: {selectedDate}</Text> : null}
+            {showCalendar && (
+              <Calendar
+                onDayPress={handleDateSelect}
+                markedDates={{
+                  [selectedDate]: { selected: true, selectedColor: '#FE724C' },
+                }}
+                style={styles.calendar}
+              />
+            )}
+          </View>
           {uploading ? (
             <TouchableOpacity style={[styles.createButton, styles.disabledButton]} disabled>
               <Text style={styles.createButtonText}>Uploading...</Text>
@@ -135,6 +189,7 @@ const CreateEvent = ({ route, navigation }) => {
               <Text style={styles.createButtonText}>Create Event</Text>
             </TouchableOpacity>
           )}
+          <Image source={require('../assets/team.png')} style={styles.teamImage} />
         </View>
       </ScrollView>
     </View>
@@ -144,17 +199,18 @@ const CreateEvent = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
+    backgroundColor: '#F5F5F5',
   },
   topBar: {
     backgroundColor: '#007BFF',
-    paddingVertical: 15,
+    paddingVertical: 20,
     paddingHorizontal: 20,
     alignItems: 'center',
-    marginTop: 50,
+    paddingTop: 50,
   },
   topBarTitle: {
     color: '#fff',
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   scrollContainer: {
@@ -167,24 +223,46 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
   },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
+  inputContainer: {
+    backgroundColor: '#fff',
+    padding: 20,
     borderRadius: 10,
+    marginBottom: 20,
+    elevation: 5, // For Android
+    shadowColor: '#000', // For iOS
+    shadowOffset: { width: 0, height: 2 }, // For iOS
+    shadowOpacity: 0.25, // For iOS
+    shadowRadius: 3.84, // For iOS
+  },
+  input: {
+    height: 50,
+    borderColor: '#ddd',
+    borderBottomWidth: 1,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    fontSize: 16,
+  },
+  timePickerButton: {
+    backgroundColor: '#007BFF',
+    padding: 15,
+    alignItems: 'center',
+    marginBottom: 20,
+    borderRadius: 10,
+  },
+  timePickerButtonText: {
+    color: '#fff',
+    fontSize: 18,
   },
   imagePicker: {
     backgroundColor: '#007BFF',
-    padding: 10,
+    padding: 15,
     alignItems: 'center',
     marginBottom: 20,
     borderRadius: 10,
   },
   imagePickerText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
   },
   imagePreview: {
     width: '100%',
@@ -195,17 +273,17 @@ const styles = StyleSheet.create({
   },
   datePickerButton: {
     backgroundColor: '#007BFF',
-    padding: 10,
+    padding: 15,
     alignItems: 'center',
     marginBottom: 20,
     borderRadius: 10,
   },
   datePickerButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
   },
   selectedDateText: {
-    fontSize: 16,
+    fontSize: 18,
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -220,11 +298,18 @@ const styles = StyleSheet.create({
   },
   createButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   disabledButton: {
     backgroundColor: 'gray',
+  },
+  teamImage: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'cover',
+    marginTop: 20,
+    borderRadius: 10,
   },
 });
 
