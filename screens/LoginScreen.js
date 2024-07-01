@@ -1,28 +1,27 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  
   const handleLogin = async() => {
-  const auth = getAuth();
+    const auth = getAuth();
   
-  signInWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      // Signed in successfully
-      const user = userCredential.user;
-      console.log('User:', user);
-      navigation.navigate('SportsScreen');
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      console.error('Error:', errorCode, errorMessage);
-    });
-};
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in successfully
+        const user = userCredential.user;
+        console.log('User:', user);
+        navigation.navigate('SportsScreen');
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.error('Error:', errorCode, errorMessage);
+      });
+  };
 
   return (
     <View style={styles.container}>
@@ -40,15 +39,18 @@ const LoginScreen = ({ navigation }) => {
         value={password}
         secureTextEntry={true}
       />
-      <Button title="Login" onPress={handleLogin} />
-      <View style={styles.additionalOptions}>
-        <Text style={styles.link} onPress={() => navigation.navigate('ForgotPassword')}>
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+        <Text style={styles.loginButtonText}>Login</Text>
+      </TouchableOpacity>
+      <Text style={styles.link} onPress={() => navigation.navigate('ForgotPasswordScreen')}>
           Forgot Password?
         </Text>
         <Text style={styles.link} onPress={() => navigation.navigate('RegisterScreen')}>
           Don't have an account? Register
         </Text>
+      <View style={styles.additionalOptions}>
       </View>
+      <Image source={require('../assets/team.png')} style={styles.image} />
     </View>
   );
 };
@@ -63,6 +65,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     marginBottom: 20,
+    fontWeight: 'bold',
   },
   input: {
     width: '100%',
@@ -73,13 +76,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 10
   },
-  additionalOptions: {
+  loginButton: {
+    backgroundColor: '#FE724C',
+    paddingVertical: 12,
+    paddingHorizontal: 80,
+    borderRadius: 20,
     marginTop: 20,
+    marginBottom: 20,
+  },
+  loginButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  additionalOptions: {
+    marginTop: 60,
+    alignItems: 'center',
   },
   link: {
     color: 'blue',
     textDecorationLine: 'underline',
     marginBottom: 10,
+  },
+  image: {
+    width: 300, // Adjust the size as needed
+    height: 150, // Adjust the size as needed
+    resizeMode: 'contain',
+    marginBottom: -140
+    
   },
 });
 

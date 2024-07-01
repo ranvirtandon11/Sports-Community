@@ -41,10 +41,9 @@ const SplashScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Animated.Image
-        source={require('../assets/logo.png')} 
+        source={require('../assets/logo1.png')} 
         style={[styles.logo, { opacity: fadeAnim, transform: [{ rotate: spin }] }]}
       />
-      <Text style={styles.title}>Sports App</Text>
     </View>
   );
 };
