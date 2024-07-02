@@ -5,12 +5,12 @@ import { getFirestore, collection } from "firebase/firestore";
 import { getStorage } from 'firebase/storage';
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBV2Q-_nJIcRHGUbhtwu8eKN9UAeaPvwQw",
-  authDomain: "fir-authentication-8abb6.firebaseapp.com",
-  projectId: "fir-authentication-8abb6",
-  storageBucket: "fir-authentication-8abb6.appspot.com",
-  messagingSenderId: "854259513422",
-  appId: "1:854259513422:web:9a3d38f04501b643f0ab1f"
+  apiKey: "AIzaSyDRil0E7X96ZpR83zYoCwPq5qEhwLz2pik",
+  authDomain: "playmate-8302d.firebaseapp.com",
+  projectId: "playmate-8302d",
+  storageBucket: "playmate-8302d.appspot.com",
+  messagingSenderId: "636770051230",
+  appId: "1:636770051230:web:34c81079e5e94b51c7878f"
 };
 
 // Initialize Firebase
